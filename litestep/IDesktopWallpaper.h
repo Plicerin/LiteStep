@@ -31,6 +31,8 @@
 
 #include "../utility/shlobj.h"
 
+#if !defined(__IDesktopWallpaper_INTERFACE_DEFINED__)
+
 enum DESKTOP_SLIDESHOW_DIRECTION
 {
     DSD_FORWARD = 0,
@@ -80,5 +82,7 @@ class IDesktopWallpaper : public IUnknown
     STDMETHOD(GetStatus) (DESKTOP_SLIDESHOW_STATE*) = 0;
     STDMETHOD(Enable) (BOOL) = 0;
 };
+
+#endif // !defined(__IDesktopWallpaper_INTERFACE_DEFINED__)
 
 #endif // IDESKTOPWALLPAPER_H
