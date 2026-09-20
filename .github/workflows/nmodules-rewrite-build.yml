@@ -32,9 +32,13 @@ jobs:
             $text = Get-Content $_.FullName -Raw
             $text = $text.Replace("<PlatformToolset>v141</PlatformToolset>", "<PlatformToolset>v143</PlatformToolset>")
             $text = $text.Replace("<WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>", "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>")
-            $text = $text.Replace('$(SolutionDir)\\libs\\$(PlatformArchitecture)', '$(SolutionDir)\\libs\\64')
             Set-Content $_.FullName $text -Encoding UTF8
           }
+
+          $props = "nModules/Rewrite/nModules.props"
+          $text = Get-Content $props -Raw
+          $text = $text.Replace('$(SolutionDir)\libs\$(PlatformArchitecture)', '$(SolutionDir)\libs\64')
+          Set-Content $props $text -Encoding UTF8
 
           $eventHeader = "nModules/Rewrite/nCore/EventHandler.hpp"
           $text = Get-Content $eventHeader -Raw
