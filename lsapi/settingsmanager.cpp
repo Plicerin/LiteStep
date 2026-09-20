@@ -73,10 +73,12 @@ BOOL SettingsManager::_FindLine(LPCWSTR pwzName, SettingsMap::iterator &it)
     ASSERT(NULL != pwzName);
     BOOL bReturn = FALSE;
 
-    // first appearance of a setting takes effect
-    it = m_SettingsMap.lower_bound(pwzName);
+    // First appearance of a setting takes effect. SettingsMap is an
+    // unordered_multimap, so use the standard equivalent-key range.
+    const auto range = m_SettingsMap.equal_range(pwzName);
+    it = range.first;
 
-    if (it != m_SettingsMap.end() && _wcsicmp(pwzName, it->first.c_str()) == 0)
+    if (it != range.second)
     {
         bReturn = TRUE;
     }
