@@ -429,6 +429,20 @@ LRESULT CALLBACK TrayService::WindowTrayProc(HWND hWnd, UINT uMsg,
                 //
                 COPYDATASTRUCT* pcds = (COPYDATASTRUCT*)lParam;
 
+                DWORD dwSenderProcessId = 0;
+                HWND hSender = reinterpret_cast<HWND>(wParam);
+                if (hSender)
+                {
+                    GetWindowThreadProcessId(hSender, &dwSenderProcessId);
+                }
+
+                TRACE("Shell_TrayWnd WM_COPYDATA sender=%p pid=%lu "
+                      "dwData=0x%Ix cbData=%lu",
+                    hSender,
+                    static_cast<unsigned long>(dwSenderProcessId),
+                    static_cast<size_t>(pcds->dwData),
+                    static_cast<unsigned long>(pcds->cbData));
+
                 switch (pcds->dwData)
                 {
                 case SH_APPBAR_DATA:
