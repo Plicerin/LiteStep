@@ -27,6 +27,7 @@
 #include "COMFactory.h"
 #include "../utility/debug.hpp"
 #include "../lsapi/lsapi.h"
+#include <functional>
 
 
 //
