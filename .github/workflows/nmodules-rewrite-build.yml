@@ -35,6 +35,16 @@ jobs:
             Set-Content $_.FullName $text -Encoding UTF8
           }
 
+          $eventHeader = "nModules/Rewrite/nCore/EventHandler.hpp"
+          $text = Get-Content $eventHeader -Raw
+          $text = $text.Replace("#include <unordered_map>", "#include <string>`r`n#include <unordered_map>")
+          Set-Content $eventHeader $text -Encoding UTF8
+
+          $pane = "nModules/Rewrite/nCore/Pane.cpp"
+          $text = Get-Content $pane -Raw
+          $text = $text.Replace("#include <strsafe.h>", "#include <strsafe.h>`r`n#include <string>")
+          Set-Content $pane $text -Encoding UTF8
+
       - name: Build nCore x64
         shell: pwsh
         run: |
