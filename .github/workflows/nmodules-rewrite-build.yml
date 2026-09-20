@@ -32,7 +32,7 @@ jobs:
             $text = Get-Content $_.FullName -Raw
             $text = $text.Replace("<PlatformToolset>v141</PlatformToolset>", "<PlatformToolset>v143</PlatformToolset>")
             $text = $text.Replace("<WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>", "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>")
-            $text = $text.Replace("$(SolutionDir)\\libs\\$(PlatformArchitecture)", "$(SolutionDir)\\libs\\64")
+            $text = $text.Replace('$(SolutionDir)\\libs\\$(PlatformArchitecture)', '$(SolutionDir)\\libs\\64')
             Set-Content $_.FullName $text -Encoding UTF8
           }
 
