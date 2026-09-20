@@ -36,12 +36,20 @@ jobs:
           }
 
           $props = "nModules/Rewrite/nModules.props"
-          $text = Get-Content $props -Raw
-          $text = $text.Replace('$(SolutionDir)\libs\$(PlatformArchitecture)', '$(SolutionDir)\libs\64')
-          Set-Content $props $text -Encoding UTF8
-
           $lsapiLibDir = (Resolve-Path "nModules/Rewrite/libs/64").Path
-          "LIB=$lsapiLibDir;$env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $lsapiLib = Join-Path $lsapiLibDir "lsapi.lib"
+          if (-not (Test-Path $lsapiLib)) {
+            throw "Missing expected nModules lsapi.lib at $lsapiLib"
+          }
+          Write-Host "Using lsapi.lib from $lsapiLib"
+
+          $text = Get-Content $props -Raw
+          $escapedLibDir = [System.Security.SecurityElement]::Escape($lsapiLibDir)
+          $text = [regex]::Replace(
+            $text,
+            '<AdditionalLibraryDirectories>[^<]*</AdditionalLibraryDirectories>',
+            "<AdditionalLibraryDirectories>$escapedLibDir</AdditionalLibraryDirectories>")
+          Set-Content $props $text -Encoding UTF8
 
           $eventHeader = "nModules/Rewrite/nCore/EventHandler.hpp"
           $text = Get-Content $eventHeader -Raw
