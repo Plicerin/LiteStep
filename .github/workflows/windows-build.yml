@@ -28,6 +28,13 @@ jobs:
         run: |
           msbuild litestep.sln /m /p:Configuration=Debug /p:Platform="${{ matrix.platform }}" /verbosity:minimal
 
+      - name: Stage Windows 11 diagnostic harness
+        shell: pwsh
+        run: |
+          Copy-Item tests/win11/step.rc "bin/Debug_${{ matrix.platform }}/step.rc"
+          Copy-Item tests/win11/run-under-explorer.ps1 "bin/Debug_${{ matrix.platform }}/run-under-explorer.ps1"
+          Copy-Item tests/win11/README.md "bin/Debug_${{ matrix.platform }}/README-WIN11-TEST.md"
+
       - name: Upload LiteStep Debug ${{ matrix.platform }}
         uses: actions/upload-artifact@v4
         with:

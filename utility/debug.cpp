@@ -21,6 +21,61 @@
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 #include "debug.hpp"
 #include "core.hpp"
+#include <cstring>
+
+
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+//
+// DbgTraceFile
+// Optional file sink for diagnostic builds. Set LITESTEP_TRACE_FILE to a path.
+//
+static void DbgTraceFile(const char* pszMessage)
+{
+#if defined(TRACE_ENABLED)
+    WCHAR wzPath[32768] = { 0 };
+    DWORD cchPath = GetEnvironmentVariableW(
+        L"LITESTEP_TRACE_FILE", wzPath, COUNTOF(wzPath));
+
+    if (cchPath == 0 || cchPath >= COUNTOF(wzPath))
+    {
+        return;
+    }
+
+    HANDLE hFile = CreateFileW(
+        wzPath, FILE_APPEND_DATA,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        return;
+    }
+
+    SYSTEMTIME st = { 0 };
+    GetLocalTime(&st);
+
+    char szLine[768] = { 0 };
+    HRESULT hr = StringCchPrintfA(
+        szLine, COUNTOF(szLine),
+        "[%02u:%02u:%02u.%03u pid=%lu tid=%lu] %s\r\n",
+        st.wHour, st.wMinute, st.wSecond, st.wMilliseconds,
+        static_cast<unsigned long>(GetCurrentProcessId()),
+        static_cast<unsigned long>(GetCurrentThreadId()),
+        pszMessage);
+
+    if (SUCCEEDED(hr))
+    {
+        DWORD cbWritten = 0;
+        WriteFile(
+            hFile, szLine, static_cast<DWORD>(std::strlen(szLine)),
+            &cbWritten, nullptr);
+    }
+
+    CloseHandle(hFile);
+#else
+    UNREFERENCED_PARAMETER(pszMessage);
+#endif
+}
 
 
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -42,6 +97,7 @@ void DbgTraceMessage(const char* pszFormat, ...)
     va_end(args);
 
     OutputDebugStringA(szBuffer);
+    DbgTraceFile(szBuffer);
 
 #if !defined(__GNUC__)
     // This just outputs a blank line in gdb
