@@ -1,0 +1,30 @@
+name: Windows 11 baseline build
+
+on:
+  push:
+    branches:
+      - master
+      - win11-0.25
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - Win32
+          - x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build LiteStep Debug ${{ matrix.platform }}
+        shell: pwsh
+        run: |
+          msbuild litestep.sln /m /p:Configuration=Debug /p:Platform="${{ matrix.platform }}" /verbosity:minimal
