@@ -98,8 +98,13 @@ bool Module::_LoadDll()
         // First, make Windows display all errors
         UINT uOldMode = SetErrorMode(0);
 
+        TRACE("Loading module \"%ls\" flags=0x%08lX",
+            m_wzLocation.c_str(), static_cast<unsigned long>(m_dwFlags));
+
         if ((m_hInstance = LoadLibraryW(m_wzLocation.c_str())) != nullptr)
         {
+            TRACE("Loaded module \"%ls\" instance=%p",
+                m_wzLocation.c_str(), m_hInstance);
             AssignToFunction(m_pInit, (initModuleProc) GetProcAddress(
                 m_hInstance, "initModuleW"));
 
@@ -319,13 +324,16 @@ bool Module::Init(HWND hMainWindow, const std::wstring& sAppPath)
 int Module::CallInit()
 {
     ASSERT(m_pInit != nullptr);
-    return m_pInit(m_hMainWindow, m_hInstance, m_wzAppPath.c_str());
+    int result = m_pInit(m_hMainWindow, m_hInstance, m_wzAppPath.c_str());
+    TRACE("Module init \"%ls\" -> %d", m_wzLocation.c_str(), result);
+    return result;
 }
 
 
 void Module::CallQuit()
 {
     ASSERT(m_pQuit != NULL);
+    TRACE("Module quit \"%ls\"", m_wzLocation.c_str());
     m_pQuit(m_hInstance);
 }
 
