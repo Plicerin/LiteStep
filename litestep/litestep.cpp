@@ -695,22 +695,36 @@ void CLiteStep::_RegisterShellNotifications(HWND hWnd)
     //
     WM_ShellHook = RegisterWindowMessage(L"SHELLHOOK");
 
+    HMODULE hShell32 = GetModuleHandle(_T("SHELL32.DLL"));
+
     m_pRegisterShellHook = (RSHPROC)GetProcAddress(
-        GetModuleHandle(_T("SHELL32.DLL")), (LPCSTR)((long)0x00B5));
+        hShell32, (LPCSTR)((long)0x00B5));
+
+    TRACE("RegisterShellHook ordinal 181: shell32=%p available=%d",
+        hShell32, m_pRegisterShellHook != nullptr);
 
     if (m_pRegisterShellHook)
     {
-        m_pRegisterShellHook(NULL, RSH_REGISTER);
+        BOOL bReset = m_pRegisterShellHook(NULL, RSH_REGISTER);
+        TRACE("RegisterShellHook(NULL, RSH_REGISTER) -> %d", bReset);
 
         if (IsOS(OS_WINDOWS))
         {
             // c0atzin's fix for 9x
-            m_pRegisterShellHook(hWnd, RSH_REGISTER);
+            BOOL bRegistered = m_pRegisterShellHook(hWnd, RSH_REGISTER);
+            TRACE("RegisterShellHook(%p, RSH_REGISTER) -> %d",
+                hWnd, bRegistered);
         }
         else
         {
-            m_pRegisterShellHook(hWnd, RSH_TASKMAN);
+            BOOL bRegistered = m_pRegisterShellHook(hWnd, RSH_TASKMAN);
+            TRACE("RegisterShellHook(%p, RSH_TASKMAN) -> %d",
+                hWnd, bRegistered);
         }
+    }
+    else
+    {
+        TRACE("RegisterShellHook ordinal 181 is unavailable.");
     }
 
     //
@@ -769,7 +783,9 @@ void CLiteStep::_UnregisterShellNotifications(HWND hWnd)
 
     if (m_pRegisterShellHook)
     {
-        m_pRegisterShellHook(hWnd, RSH_UNREGISTER);
+        BOOL bUnregistered = m_pRegisterShellHook(hWnd, RSH_UNREGISTER);
+        TRACE("RegisterShellHook(%p, RSH_UNREGISTER) -> %d",
+            hWnd, bUnregistered);
     }
 }
 
@@ -1152,6 +1168,12 @@ LRESULT CLiteStep::InternalWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
             {
                 WORD wHookCode  = (LOWORD(wParam) & 0x00FF);
                 WORD wExtraBits = (LOWORD(wParam) & 0xFF00);
+
+                TRACE("SHELLHOOK code=%u extra=0x%04X wParam=%p lParam=%p",
+                    static_cast<unsigned>(wHookCode),
+                    static_cast<unsigned>(wExtraBits),
+                    reinterpret_cast<void*>(wParam),
+                    reinterpret_cast<void*>(lParam));
 
                 // Convert to an LM_SHELLHOOK message
                 uMsg = LM_SHELLHOOK + wHookCode;
