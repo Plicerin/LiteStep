@@ -23,6 +23,8 @@
 #if !defined(IDESKTOPWALLPAPERPRIVATE_H)
 #define IDESKTOPWALLPAPERPRIVATE_H
 
+#include "IDesktopWallpaper.h"
+
 //
 // The functions listed here, and their functionality are guesses, which were
 // obtained by examining how explorer handles these calls.
