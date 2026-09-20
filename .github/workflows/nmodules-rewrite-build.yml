@@ -1,0 +1,68 @@
+name: nModules Rewrite baseline build
+
+on:
+  push:
+    branches:
+      - win11-0.25
+  workflow_dispatch:
+
+jobs:
+  build-nmodules-x64:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout LiteStep branch
+        uses: actions/checkout@v4
+        with:
+          path: LiteStep
+
+      - name: Checkout nModules
+        uses: actions/checkout@v4
+        with:
+          repository: alur/nModules
+          path: nModules
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Retarget nModules Rewrite to current toolchain
+        shell: pwsh
+        run: |
+          Get-ChildItem nModules/Rewrite -Recurse -Filter *.vcxproj | ForEach-Object {
+            $text = Get-Content $_.FullName -Raw
+            $text = $text.Replace("<PlatformToolset>v141</PlatformToolset>", "<PlatformToolset>v143</PlatformToolset>")
+            $text = $text.Replace("<WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>", "<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>")
+            Set-Content $_.FullName $text -Encoding UTF8
+          }
+
+      - name: Build nCore x64
+        shell: pwsh
+        run: |
+          msbuild nModules/Rewrite/nCore/nCore.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /verbosity:minimal
+
+      - name: Build nDesk x64
+        shell: pwsh
+        run: |
+          msbuild nModules/Rewrite/nDesk/nDesk.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /verbosity:minimal
+
+      - name: Build nTask x64
+        shell: pwsh
+        run: |
+          msbuild nModules/Rewrite/nTask/nTask.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /verbosity:minimal
+
+      - name: Build nTray x64
+        shell: pwsh
+        run: |
+          msbuild nModules/Rewrite/nTray/nTray.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /verbosity:minimal
+
+      - name: Build nPopup x64
+        shell: pwsh
+        run: |
+          msbuild nModules/Rewrite/nPopup/nPopup.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /verbosity:minimal
+
+      - name: Upload nModules Rewrite x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: nModules-Rewrite-Debug-x64
+          path: nModules/Rewrite/bin/Debug_x64/
+          if-no-files-found: error
