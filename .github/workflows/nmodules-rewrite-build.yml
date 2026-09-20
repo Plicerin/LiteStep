@@ -91,9 +91,19 @@ jobs:
         run: |
           msbuild nModules/Rewrite/nPopup/nPopup.vcxproj /m /p:Configuration=Debug /p:Platform=x64 /verbosity:minimal
 
+      - name: Stage nModules Rewrite x64
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path nModules-package | Out-Null
+          Copy-Item nModules/Rewrite/nCore/bin/Debug_x64/nCore.dll nModules-package/
+          Copy-Item nModules/Rewrite/nDesk/bin/Debug_x64/nDesk.dll nModules-package/
+          Copy-Item nModules/Rewrite/nTask/bin/Debug_x64/nTask.dll nModules-package/
+          Copy-Item nModules/Rewrite/nTray/bin/Debug_x64/nTray.dll nModules-package/
+          Copy-Item nModules/Rewrite/nPopup/bin/Debug_x64/nPopup.dll nModules-package/
+
       - name: Upload nModules Rewrite x64
         uses: actions/upload-artifact@v4
         with:
           name: nModules-Rewrite-Debug-x64
-          path: nModules/Rewrite/bin/Debug_x64/
+          path: nModules-package/
           if-no-files-found: error
