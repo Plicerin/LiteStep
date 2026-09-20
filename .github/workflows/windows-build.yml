@@ -27,3 +27,10 @@ jobs:
         shell: pwsh
         run: |
           msbuild litestep.sln /m /p:Configuration=Debug /p:Platform="${{ matrix.platform }}" /verbosity:minimal
+
+      - name: Upload LiteStep Debug ${{ matrix.platform }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiteStep-Debug-${{ matrix.platform }}
+          path: bin/Debug_${{ matrix.platform }}/
+          if-no-files-found: error
