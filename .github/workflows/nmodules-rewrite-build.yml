@@ -40,6 +40,9 @@ jobs:
           $text = $text.Replace('$(SolutionDir)\libs\$(PlatformArchitecture)', '$(SolutionDir)\libs\64')
           Set-Content $props $text -Encoding UTF8
 
+          $lsapiLibDir = (Resolve-Path "nModules/Rewrite/libs/64").Path
+          "LIB=$lsapiLibDir;$env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
           $eventHeader = "nModules/Rewrite/nCore/EventHandler.hpp"
           $text = Get-Content $eventHeader -Raw
           $text = $text.Replace("#include <unordered_map>", "#include <string>`r`n#include <unordered_map>")
