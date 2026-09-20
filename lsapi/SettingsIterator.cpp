@@ -113,38 +113,38 @@ BOOL SettingsIterator::ReadNextConfig(LPCWSTR pwzConfig, LPWSTR pwzValue, size_t
         pwzConfig = sConfig.c_str();
 #endif // defined(LS_COMPAT_LCREADNEXTCONFIG)
 
-        // Has ReadNextConfig been used before for pszConfig?
+        // Has ReadNextConfig been used before for pwzConfig?
         IteratorMap::iterator it = m_Iterators.find(pwzConfig);
+
+        // SettingsMap is an unordered_multimap.  Older MSVC versions exposed
+        // lower_bound/upper_bound-style behavior here, but standard
+        // unordered associative containers use equal_range().
+        const auto settingsRange = m_pSettingsMap->equal_range(pwzConfig);
 
         if (it == m_Iterators.end())
         {
-            // No, so find the first item with a key of pszConfig
-            itSettings = m_pSettingsMap->lower_bound(pwzConfig);
+            // No, so use the first item with a matching key.
+            itSettings = settingsRange.first;
 
-            if (itSettings != m_pSettingsMap->end())
+            if (itSettings != settingsRange.second)
             {
-                // Save the iterator for future use and return the value
-                it = (m_Iterators.insert(
-                    IteratorMap::value_type(pwzConfig, itSettings)
-                ));
+                // Save the iterator for future use and return the value.
+                it = m_Iterators.insert(
+                    IteratorMap::value_type(pwzConfig, itSettings));
 
                 bReturn = TRUE;
             }
         }
         else
         {
-            // Yes so find the last item with a matching key
-            itSettings = m_pSettingsMap->upper_bound(pwzConfig);
+            // Advance within the equivalent-key range.
+            itSettings = settingsRange.second;
 
-            // Loop until we either find an item with a matching key or the
-            // last matching item
-            do
+            if (it->second != itSettings)
             {
                 ++it->second;
-            } while ((_wcsicmp(pwzConfig, it->first.c_str()) != 0) &&
-                     (it->second != itSettings));
+            }
 
-            // If we found a valid item, return it
             if (it->second != itSettings)
             {
                 bReturn = TRUE;
