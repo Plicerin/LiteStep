@@ -61,6 +61,11 @@ jobs:
           $text = $text.Replace("#include <strsafe.h>", "#include <strsafe.h>`r`n#include <string>")
           Set-Content $pane $text -Encoding UTF8
 
+          $trayManager = "nModules/Rewrite/nTray/TrayManager.hpp"
+          $text = Get-Content $trayManager -Raw
+          $text = $text.Replace("#include <map>", "#include <map>`r`n#include <string>")
+          Set-Content $trayManager $text -Encoding UTF8
+
       - name: Build nCore x64
         shell: pwsh
         run: |
