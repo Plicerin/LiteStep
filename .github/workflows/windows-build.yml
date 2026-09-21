@@ -28,6 +28,20 @@ jobs:
         run: |
           msbuild litestep.sln /m /p:Configuration=Debug /p:Platform="${{ matrix.platform }}" /verbosity:minimal
 
+      - name: Build ITaskbarList3 probe
+        if: matrix.platform == 'x64'
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw "Visual Studio VC tools not found" }
+          $vsdev = Join-Path $vs "Common7\Tools\VsDevCmd.bat"
+          $outDir = (Resolve-Path "bin/Debug_x64").Path
+          $src = (Resolve-Path "tests/win11/taskbar-probe.cpp").Path
+          $cmd = "`"$vsdev`" -no_logo -arch=x64 -host_arch=x64 && cl /nologo /EHsc /DUNICODE /D_UNICODE `"$src`" /Fe:`"$outDir\taskbar-probe.exe`" ole32.lib user32.lib shell32.lib comctl32.lib"
+          cmd /d /s /c $cmd
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Stage Windows 11 diagnostic harness
         shell: pwsh
         run: |
