@@ -1557,6 +1557,7 @@ BOOL CLiteStep::_SetShellWindow(HWND hWnd) {
     if (fnSetShellWindow)
     {
         bRet = fnSetShellWindow(hWnd);
+        TRACE("SetShellWindow(%p) -> %d", hWnd, bRet);
     }
     else
     {
